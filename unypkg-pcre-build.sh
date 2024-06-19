@@ -35,27 +35,29 @@ mkdir -pv /uny/sources
 cd /uny/sources || exit
 
 pkgname="pcre"
-pkggit="https://github.com/pcre/pcre.git refs/tags/*"
-gitdepth="--depth=1"
+#pkggit="https://github.com/pcre/pcre.git refs/tags/*"
+#gitdepth="--depth=1"
 
 ### Get version info from git remote
 # shellcheck disable=SC2086
-latest_head="$(git ls-remote --refs --tags --sort="v:refname" $pkggit | grep -E "v[0-9.]+$" | tail --lines=1)"
-latest_ver="$(echo "$latest_head" | grep -o "v[0-9.].*" | sed "s|v||")"
-latest_commit_id="$(echo "$latest_head" | cut --fields=1)"
+#latest_head="$(git ls-remote --refs --tags --sort="v:refname" $pkggit | grep -E "v[0-9.]+$" | tail --lines=1)"
+latest_ver="8.45"
+#latest_commit_id="$(echo "$latest_head" | cut --fields=1)"
 
 version_details
 
 # Release package no matter what:
 echo "newer" >release-"$pkgname"
 
-git_clone_source_repo
+#git_clone_source_repo
+
+wget https://ftp.exim.org/pub/pcre/pcre-8.45.tar.gz
 
 #cd "$pkgname" || exit
 #./autogen.sh
 #cd /uny/sources || exit
 
-archiving_source
+#archiving_source
 
 ######################################################################################################################
 ### Build
@@ -78,10 +80,12 @@ get_include_paths
 unset LD_RUN_PATH
 
 ./configure \
-    --prefix=/uny/pkg/"$pkgname"/"$pkgver"
+    --prefix=/uny/pkg/"$pkgname"/"$pkgver" \
+    --enable-jit --enable-unicode-properties --enable-utf \
+    --with-pic --with-match-limit=100000
 
 make -j"$(nproc)"
-make -j"$(nproc)" check 
+
 make -j"$(nproc)" install
 
 ####################################################
